@@ -241,12 +241,31 @@ def _member_info(member: Any, transactions: Any, orders: Any, env: dict[str, str
 
 
 def _login_orders(cw: Cineworld, env_path: Path, save: bool) -> Any:
-    try: return cw.get_orders()
-    except (NotAuthenticatedError, CineworldError): pass
-    env = _env(env_path); email = env.get("CINEWORLD_EMAIL") or input("Cineworld email: ").strip(); password = env.get("CINEWORLD_PASSWORD") or getpass("Cineworld password: ")
+    env = _env(env_path)
+    email = env.get("CINEWORLD_EMAIL")
+    password = env.get("CINEWORLD_PASSWORD")
+
+    try:
+        orders = cw.get_orders()
+        # A persistent browser session may still be valid on the first report
+        # run. If the user asked us to remember credentials, collect them once
+        # now so a future expired session can be filled automatically.
+        if save and (not email or not password):
+            email = email or input("Cineworld email (saved locally in .env): ").strip()
+            password = password or getpass("Cineworld password (saved locally in .env): ")
+            _save_env(env_path, {"CINEWORLD_EMAIL": email, "CINEWORLD_PASSWORD": password})
+            print(f"Saved login locally to {env_path.resolve()} (plaintext, gitignored).")
+        return orders
+    except (NotAuthenticatedError, CineworldError):
+        pass
+
+    email = email or input("Cineworld email: ").strip()
+    password = password or getpass("Cineworld password: ")
     if save:
-        _save_env(env_path, {"CINEWORLD_EMAIL": email, "CINEWORLD_PASSWORD": password}); print(f"Saved login locally to {env_path.resolve()} (plaintext, gitignored).")
-    cw.login(email=email, password=password, auto_submit=False); return cw.get_orders()
+        _save_env(env_path, {"CINEWORLD_EMAIL": email, "CINEWORLD_PASSWORD": password})
+        print(f"Saved login locally to {env_path.resolve()} (plaintext, gitignored).")
+    cw.login(email=email, password=password, auto_submit=False)
+    return cw.get_orders()
 
 
 def _poster(item: dict) -> str:
