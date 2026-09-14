@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cineworld-api-wrapper"
-version = "0.2.0"
+version = "0.3.0"
 description = "Unofficial browser-assisted Python wrapper for Cineworld UK web APIs"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -15,6 +15,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<9"]
+
+[project.scripts]
+cineworld-report = "cineworld.report:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
