@@ -1,0 +1,15 @@
+# Cineworld authentication/session state - NEVER COMMIT
+.cineworld/
+.cineworld-profile/
+.cineworld-session.json
+*.har
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+dist/
+build/
+*.egg-info/

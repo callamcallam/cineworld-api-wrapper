@@ -1,0 +1,5 @@
+EXPERIENCE_BASE = "https://experience.cineworld.co.uk"
+WEBSITE_BASE = "https://www.cineworld.co.uk"
+LOGIN_URL = f"{EXPERIENCE_BASE}/login"
+DEFAULT_SITE_ID = "10108"
+DEFAULT_LANGUAGE = "en_GB"
