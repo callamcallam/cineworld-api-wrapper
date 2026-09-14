@@ -13,11 +13,11 @@ Cineworld currently protects login with Cloudflare Turnstile. A failed capture s
 
 A known-good browser login instead submitted a real Turnstile token and reached Cineworld's JSON login API.
 
-Because of that, v0.2.0 does **not** try to manufacture, bypass, or fake Cloudflare values. It launches your installed Chrome/Edge as a normal visible process using a dedicated local profile, attaches only so it can observe Cineworld's responses, fills the supplied details if requested, and leaves the actual **Log in / Turnstile interaction to you**.
+Because of that, v0.3.0 does **not** try to manufacture, bypass, or fake Cloudflare values. It launches your installed Chrome/Edge as a normal visible process using a dedicated local profile, attaches only so it can observe Cineworld's responses, fills the supplied details if requested, and leaves the actual **Log in / Turnstile interaction to you**.
 
 Once Cineworld accepts the login, the wrapper captures the generated Cineworld session values and reuses the authenticated browser session.
 
-## Install
+## Install / upgrade
 
 ```powershell
 py -m pip install --upgrade "git+https://github.com/callamcallam/cineworld-api-wrapper.git"
@@ -168,3 +168,72 @@ with Cineworld() as cw:
 - Normal `/api/login` can return `UserSessionId: null`; the booking-side ID is established later by `CreateVistaSession`.
 - Cineworld JSON POST/PUT requests use `Content-Type: application/json` in the capture.
 - No credentials, cookies, CAPTCHA tokens or session tokens from the HAR are embedded in this project.
+
+## Unlimited usage & savings report
+
+After installing the package, generate a local HTML report from your Cineworld account:
+
+```powershell
+cineworld-report
+```
+
+Or:
+
+```powershell
+py -m cineworld.report
+```
+
+### First run
+
+The command first tries the saved browser/session state. If Cineworld needs you to log in, it asks for your email and password, opens the real Cineworld login page, fills the credentials, and leaves the final **Log in / Cloudflare Turnstile** interaction to you.
+
+By default, the email and password are then saved locally in `.env` so later runs can fill them automatically:
+
+```dotenv
+CINEWORLD_EMAIL="you@example.com"
+CINEWORLD_PASSWORD="your-password"
+```
+
+`.env`, `.env.*`, HAR files and Cineworld browser/session folders are excluded by `.gitignore`. The `.env` file is **plaintext on your own computer**, so do not share or upload it. Use `--no-save-credentials` if you do not want credentials saved.
+
+### Automatic membership discovery
+
+The report tries to discover these values without prompting:
+
+- home/most-used cinema from your account booking history
+- active Unlimited plan and status directly from the member API when available
+- Unlimited membership group from the active subscription, account data, or Cineworld's current public group page
+- full plan cost and actual next payment amount from the active subscription when Cineworld exposes them
+- next due date and membership start date from the active subscription when available
+- current full monthly price for the group from Cineworld's official Unlimited page as a fallback/current-price check
+- Red vs Black/Premium stage from the membership age
+- current student offer percentage from Cineworld's official student offer page
+- completed, non-refunded screenings and unique films
+- formats used (2D, IMAX, 4DX, Superscreen, recliner, 3D, etc.)
+- estimated retail ticket value, Unlimited uplifts and net saving
+
+If Cineworld does not expose an exact historic value, the report labels it as an estimate and uses current public pricing/fallbacks rather than pretending it is exact.
+
+Optional overrides can be stored locally in `.env`:
+
+```dotenv
+CINEWORLD_STANDARD_2D_PRICE="4.99"
+CINEWORLD_MONTHLY_COST="12.99"
+CINEWORLD_MEMBERSHIP_START="2026-01-01"
+```
+
+Or supplied once on the command line:
+
+```powershell
+cineworld-report --standard-price 4.99 --monthly-cost 12.99 --start-date 2026-01-01
+```
+
+The output is `cineworld_report.html` by default and opens automatically. The generated HTML never contains your Cineworld email, password, cookies or session token.
+
+Useful options:
+
+```powershell
+cineworld-report --no-open
+cineworld-report --no-save-credentials
+cineworld-report --env-file path\to\private.env
+```
