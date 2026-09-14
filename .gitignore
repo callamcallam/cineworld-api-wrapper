@@ -3,6 +3,9 @@
 .cineworld-profile/
 .cineworld-session.json
 *.har
+.env
+.env.*
+!.env.example
 
 # Python
 __pycache__/
